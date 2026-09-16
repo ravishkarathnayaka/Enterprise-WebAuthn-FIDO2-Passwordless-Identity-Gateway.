@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Enterprise WebAuthn / FIDO2 Identity Gateway — Interactive Showcase</title>
+  <meta name="description" content="Production-ready FIDO2 / WebAuthn Level 3 Relying Party backend, anti-replay signature counter verification, step-up auth, and reverse proxy gateway.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <!-- Navigation Header -->
+  <header class="navbar">
+    <div class="container" style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+      <div class="brand">
+        <div class="brand-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+            <path d="M9 12l2 2 4-4"/>
+          </svg>
+        </div>
+        <div class="brand-text">
+          <h1>WebAuthn FIDO2 Gateway</h1>
+          <span>Enterprise IAM & Reverse Proxy</span>
+        </div>
+      </div>
+
+      <nav class="nav-links">
+        <a href="#playground" class="nav-link active">Interactive Lab</a>
+        <a href="#threat-matrix" class="nav-link">Threat Defense</a>
+        <a href="#architecture" class="nav-link">Architecture</a>
+        <a href="https://github.com/ravishkarathnayaka/Enterprise-WebAuthn-FIDO2-Passwordless-Identity-Gateway." target="_blank" rel="noopener noreferrer" class="nav-btn">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+            <path fill-rule="evenodd" clip-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.53 1.032 1.53 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/>
+          </svg>
+          View Source
+        </a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Hero Section -->
+  <section class="hero">
+    <div class="container">
+      <div class="pill-badge">
+        <span class="pulse-dot"></span>
+        <span id="browserWebAuthnPill">FIDO2 / WebAuthn Level 3 Standard Active</span>
+      </div>
+      <h2>Phishing-Resistant Hardware Passkeys<br>With Signature Counter Anti-Replay Guard</h2>
+      <p>
+        An enterprise security architecture replacing vulnerable passwords with cryptographic, hardware-backed authenticators (Touch ID, Windows Hello, YubiKey). Features anti-replay signature counter validation to detect cloned tokens, signed JWT session cookies, and risk-based step-up re-authentication.
+      </p>
+
+      <div class="hero-stats">
+        <div class="stat-item">
+          <div class="stat-value cyan">0 Passwords</div>
+          <div class="stat-label">Cryptographic Private Keys</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value emerald">100% Phishing Proof</div>
+          <div class="stat-label">Hardware Domain Binding</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value violet">&lt; 60s Window</div>
+          <div class="stat-label">Step-Up Auth Protection</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value cyan">14 / 14 Passed</div>
+          <div class="stat-label">Headless CDP CI Tests</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Main Interactive Section -->
+  <main class="section" id="playground">
+    <div class="container">
+      <!-- Tab Controls -->
+      <div class="tabs">
+        <button class="tab-btn active" data-tab="playground">Interactive Passkey Lab</button>
+        <button class="tab-btn" data-tab="counter-lab">Anti-Replay Clone Attack Lab</button>
+        <button class="tab-btn" data-tab="threat-matrix">Threat Defense Matrix</button>
+        <button class="tab-btn" data-tab="architecture">Microservice Architecture</button>
+      </div>
+
+      <!-- TAB 1: INTERACTIVE PASSKEY LAB -->
+      <div class="tab-content" id="tab-playground">
+        <div class="grid-2">
+          <!-- Controls Panel -->
+          <div class="glass-card">
+            <span class="section-tag">Interactive Controls</span>
+            <h3 style="font-size: 1.3rem; margin-bottom: 16px;">Passkey Ceremony Engine</h3>
+            
+            <div class="playground-control">
+              <label for="simUsername">Corporate User Identity</label>
+              <input type="text" id="simUsername" class="input-field" value="alice.security@enterprise.corp">
+            </div>
+            
+            <div class="playground-control">
+              <label for="simDisplayName">Display Name</label>
+              <input type="text" id="simDisplayName" class="input-field" value="Alice Security Architect">
+            </div>
+
+            <div style="margin-top: 24px; display: flex; flex-direction: column; gap: 12px;">
+              <button class="cyber-btn cyber-btn-emerald" id="btnSimRegister">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                  <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                </svg>
+                1. Simulate Passkey Registration
+              </button>
+
+              <button class="cyber-btn cyber-btn-violet" id="btnSimAuth">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/>
+                  <polyline points="10 17 15 12 10 7"/>
+                  <line x1="15" y1="12" x2="3" y2="12"/>
+                </svg>
+                2. Simulate Legitimate Login (Counter +1)
+              </button>
+
+              <button class="cyber-btn cyber-btn-amber" id="btnSimTransfer">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <line x1="12" y1="1" x2="12" y2="23"/>
+                  <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+                </svg>
+                3. High-Risk $50k Wire Transfer (Step-Up Test)
+              </button>
+
+              <button class="cyber-btn cyber-btn-outline" id="btnSimUpstream">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M4 17l6-6-6-6"/>
+                  <path d="M12 19h8"/>
+                </svg>
+                4. Test Reverse Proxy (/upstream/api/confidential-records)
+              </button>
+            </div>
+
+            <!-- Active Passkey State Chip -->
+            <div class="counter-box">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                <span style="font-size: 0.8rem; color: var(--text-muted); font-family: var(--font-mono);">ENCLAVE HARDWARE STATE</span>
+                <span id="stepUpIndicator" class="threat-badge badge-defense" style="margin: 0;">
+                  <span id="stepUpTimeText">Step-Up Ready</span>
+                </span>
+              </div>
+              <div style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 6px;">
+                Active Credential ID: <span id="activeCredId" style="font-family: var(--font-mono); color: var(--accent-cyan);">aXJ1OWZzN2FzZGY4YWFz...</span>
+              </div>
+              <div class="counter-grid">
+                <div class="counter-stat green">
+                  <div class="num" id="storedCounterDisplay">10</div>
+                  <div class="stat-label">Stored Sign Count</div>
+                </div>
+                <div class="counter-stat">
+                  <div class="num" id="incomingCounterDisplay" style="color: var(--accent-cyan);">11</div>
+                  <div class="stat-label">Next Expected Count</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Cryptographic Terminal & Payload Inspector -->
+          <div style="display: flex; flex-direction: column; gap: 20px;">
+            <!-- Live Cryptographic Telemetry -->
+            <div class="code-window">
+              <div class="code-header">
+                <div class="window-dots">
+                  <div class="dot dot-red"></div>
+                  <div class="dot dot-yellow"></div>
+                  <div class="dot dot-green"></div>
+                </div>
+                <div class="window-title">LIVE CRYPTOGRAPHIC TELEMETRY CONSOLE</div>
+                <div style="color: var(--accent-cyan); font-size: 0.72rem;">RFC 8295 / CTAP2</div>
+              </div>
+              <div class="code-content" id="terminalOutput" style="height: 240px;"></div>
+            </div>
+
+            <!-- JSON Payload Inspector -->
+            <div class="code-window">
+              <div class="code-header">
+                <div class="window-dots">
+                  <div class="dot dot-red"></div>
+                  <div class="dot dot-yellow"></div>
+                  <div class="dot dot-green"></div>
+                </div>
+                <div class="window-title">STANDARDS COMPLIANT WEBAUTHN PAYLOAD</div>
+                <div style="color: var(--text-muted); font-size: 0.72rem;">JSON-SERIALIZED</div>
+              </div>
+              <div class="code-content" id="payloadViewer" style="height: 240px;">// Trigger a ceremony above to inspect raw CBOR/JSON cryptographic options.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 2: ANTI-REPLAY ATTACK LAB -->
+      <div class="tab-content" id="tab-counter-lab" style="display: none;">
+        <div class="grid-2">
+          <div class="glass-card">
+            <span class="section-tag">Anti-Clone Defense</span>
+            <h3 style="font-size: 1.3rem; margin-bottom: 14px;">Simulate FIDO2 Token Cloning & Replay Attack</h3>
+            <p style="color: var(--text-secondary); font-size: 0.95rem; margin-bottom: 20px;">
+              Physical FIDO2 hardware authenticators maintain an internal monotonic counter incremented every time a user touches the sensor. If an attacker clones a virtual key or intercepts an assertion, the received counter will be <strong>equal to or lower</strong> than the stored counter.
+            </p>
+
+            <button class="cyber-btn" style="background: linear-gradient(135deg, #e11d48, #f43f5e); color: white; width: 100%; box-shadow: 0 4px 15px rgba(244, 63, 94, 0.4);" id="btnSimReplay">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                <line x1="12" y1="9" x2="12" y2="13"/>
+                <line x1="12" y1="17" x2="12.01" y2="17"/>
+              </svg>
+              Execute Cloned Key Replay Attack (Counter Frozen: 10 ➔ 10)
+            </button>
+
+            <div class="counter-box" style="margin-top: 24px;">
+              <h4 style="font-size: 0.95rem; margin-bottom: 10px; color: var(--accent-rose);">Gateway Enforcement Rule (Section 7.2 WebAuthn):</h4>
+              <pre style="font-family: var(--font-mono); font-size: 0.8rem; color: #cbd5e1; line-height: 1.6;">
+if (incoming_sign_count &lt;= stored_sign_count and stored_sign_count &gt; 0):
+    raise CounterReplayError(
+        "Cloned authenticator or replay attack detected!"
+    )
+# HTTP 403 Forbidden + Audit Log Alert
+              </pre>
+            </div>
+          </div>
+
+          <div class="glass-card">
+            <span class="section-tag">Forensic Audit Output</span>
+            <h3 style="font-size: 1.3rem; margin-bottom: 14px;">Real-Time Defense Log</h3>
+            <div class="code-window">
+              <div class="code-content" style="height: 380px; color: #fca5a5;">
+[SECURITY ALERT] FIDO2 Counter Replay / Clone Attack detected!
+Credential ID: aXJ1OWZzN2FzZGY4YWFzZGZhc2Rm...
+Stored sign_count: 10 | Received sign_count: 10
+Result: REJECTED with HTTP 403 FORBIDDEN
+
+{
+  "error": "counter_replay_detected",
+  "message": "Potential cloned authenticator or replay attack detected. Signature counter not incremented.",
+  "stored_counter": 10,
+  "received_counter": 10,
+  "action_taken": "Session Revoked & Threat Telemetry Dispatched"
+}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 3: THREAT DEFENSE MATRIX -->
+      <div class="tab-content" id="tab-threat-matrix" style="display: none;">
+        <div class="grid-3">
+          <div class="threat-card">
+            <div class="threat-badge badge-defense">Phishing Resistant</div>
+            <h3>Origin & Domain Binding</h3>
+            <p>Authenticators cryptographically bind signatures to the verified TLS origin (e.g. <code>localhost:8000</code>). Fake phishing domains cannot harvest credentials because the authenticator refuses to sign mismatched origins.</p>
+          </div>
+
+          <div class="threat-card">
+            <div class="threat-badge badge-defense">Zero Passwords</div>
+            <h3>Public-Key Asymmetric Crypto</h3>
+            <p>Private keys never leave the hardware secure enclave. Servers only store public keys (ES256/RS256). Even if the gateway database is breached, no passwords or private keys can be stolen.</p>
+          </div>
+
+          <div class="threat-card">
+            <div class="threat-badge badge-defense">Anti-Cloning</div>
+            <h3>Monotonic Signature Counters</h3>
+            <p>Hardware authenticators increment a tamper-proof counter on every assertion. Cloned keys or replayed messages are detected and rejected instantly by the Relying Party.</p>
+          </div>
+
+          <div class="threat-card">
+            <div class="threat-badge badge-defense">Single-Use Nonces</div>
+            <h3>Transient Challenge TTL</h3>
+            <p>Cryptographic challenges expire within 120 seconds and are atomically deleted upon consumption, preventing transaction replay attacks across network channels.</p>
+          </div>
+
+          <div class="threat-card">
+            <div class="threat-badge badge-defense">Step-Up Auth</div>
+            <h3>60-Second Re-Auth Window</h3>
+            <p>High-risk corporate operations (e.g. wire transfers or secret key exports) mandate a fresh hardware biometric assertion executed within the previous 60 seconds.</p>
+          </div>
+
+          <div class="threat-card">
+            <div class="threat-badge badge-defense">Perimeter Security</div>
+            <h3>Reverse Proxy Identity Injection</h3>
+            <p>The gateway verifies sessions before routing to upstream microservices, stripping caller cookies and injecting trusted identity headers (<code>X-Authenticated-User</code>, <code>X-User-Verified</code>).</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 4: ARCHITECTURE -->
+      <div class="tab-content" id="tab-architecture" style="display: none;">
+        <div class="glass-card">
+          <span class="section-tag">System Design</span>
+          <h3 style="font-size: 1.3rem; margin-bottom: 16px;">Zero-Trust Microservice Gateway Topology</h3>
+          <div class="code-window" style="padding: 20px;">
+            <pre style="color: #cbd5e1; font-family: var(--font-mono); font-size: 0.85rem; line-height: 1.6;">
+[ Client / Browser ] 
+       │ 
+       │ (1) navigator.credentials.create() / get()
+       ▼
+┌────────────────────────────────────────────────────────────────────────┐
+│               GATEWAY RELYING PARTY & REVERSE PROXY (Port 8000)        │
+│                                                                        │
+│   • Registration & Assertion Handlers (py_webauthn 3.0.0)              │
+│   • Transient Challenge Store (Redis / Memory TTL Cache)               │
+│   • Monotonic Signature Counter Replay Guard                           │
+│   • Session Token Mint (Signed JWT / HttpOnly Cookie)                  │
+│   • Reverse Proxy Middleware (auth_proxy.py)                           │
+└──────────────────────────────────┬─────────────────────────────────────┘
+                                   │ 
+                                   │ (2) Injected Identity Assertions:
+                                   │     - X-Authenticated-User
+                                   │     - X-Passkey-Credential-Id
+                                   │     - X-User-Verified: true
+                                   ▼
+┌────────────────────────────────────────────────────────────────────────┐
+│               PROTECTED UPSTREAM MICROSERVICE (Port 8001)              │
+│                                                                        │
+│   • /api/confidential-records (SOC 2, HSM Keys, Corporate Ledgers)     │
+│   • /api/admin/transfer (Step-Up Wire Transfers)                       │
+└────────────────────────────────────────────────────────────────────────┘
+            </pre>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer>
+    <div class="container">
+      <p>
+        Enterprise WebAuthn / FIDO2 Passwordless Identity Gateway &bull;
+        Designed for High-Security IAM Environments &bull;
+        Released under the <a href="https://opensource.org/licenses/MIT" target="_blank">MIT License</a>.
+      </p>
+      <p style="margin-top: 8px;">
+        Hosted with <a href="https://vercel.com" target="_blank">Vercel</a> &bull;
+        Codebase on <a href="https://github.com/ravishkarathnayaka/Enterprise-WebAuthn-FIDO2-Passwordless-Identity-Gateway." target="_blank">GitHub</a>.
+      </p>
+    </div>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
