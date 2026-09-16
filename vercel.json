@@ -1,7 +1,5 @@
 {
   "version": 2,
-  "framework": null,
-  "public": true,
   "cleanUrls": true,
   "outputDirectory": "portal",
   "headers": [
