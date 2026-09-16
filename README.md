@@ -5,6 +5,9 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11%20%7C%203.12%20%7C%203.14-blue)](https://www.python.org/downloads/)
 [![WebAuthn Level 3](https://img.shields.io/badge/FIDO2-WebAuthn%20Level%203-green.svg)](https://www.w3.org/TR/webauthn-3/)
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-Vercel-purple?logo=vercel&logoColor=white)](https://fido2-gateway-showcase.vercel.app/)
+
+> **Live Interactive Showcase**: [https://fido2-gateway-showcase.vercel.app/](https://fido2-gateway-showcase.vercel.app/)
 
 An open-source, production-ready **FIDO2 / WebAuthn Level 3 Relying Party (RP) backend and reverse proxy gateway** that replaces passwords with cryptographic, hardware-backed passkeys (such as Apple Touch ID / Face ID, Windows Hello, Android Biometrics, or physical YubiKeys).
 
