@@ -1,7 +1,7 @@
 # Enterprise WebAuthn / FIDO2 Passwordless Identity Gateway
 
-[![CI - Lint, Unit & Headless FIDO2 E2E Tests](https://github.com/ravishkarathnayaka/Enterprise-WebAuthn-FIDO2-Passwordless-Identity-Gateway/actions/workflows/ci.yml/badge.svg)](https://github.com/ravishkarathnayaka/Enterprise-WebAuthn-FIDO2-Passwordless-Identity-Gateway/actions/workflows/ci.yml)
-[![Security & Vulnerability Scan](https://github.com/ravishkarathnayaka/Enterprise-WebAuthn-FIDO2-Passwordless-Identity-Gateway/actions/workflows/security-scan.yml/badge.svg)](https://github.com/ravishkarathnayaka/Enterprise-WebAuthn-FIDO2-Passwordless-Identity-Gateway/actions/workflows/security-scan.yml)
+[![CI - Lint, Unit & Headless FIDO2 E2E Tests](https://github.com/ravishkarathnayaka/Enterprise-WebAuthn-FIDO2-Passwordless-Identity-Gateway./actions/workflows/ci.yml/badge.svg)](https://github.com/ravishkarathnayaka/Enterprise-WebAuthn-FIDO2-Passwordless-Identity-Gateway./actions/workflows/ci.yml)
+[![Security & Vulnerability Scan](https://github.com/ravishkarathnayaka/Enterprise-WebAuthn-FIDO2-Passwordless-Identity-Gateway./actions/workflows/security-scan.yml/badge.svg)](https://github.com/ravishkarathnayaka/Enterprise-WebAuthn-FIDO2-Passwordless-Identity-Gateway./actions/workflows/security-scan.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11%20%7C%203.12%20%7C%203.14-blue)](https://www.python.org/downloads/)
 [![WebAuthn Level 3](https://img.shields.io/badge/FIDO2-WebAuthn%20Level%203-green.svg)](https://www.w3.org/TR/webauthn-3/)
