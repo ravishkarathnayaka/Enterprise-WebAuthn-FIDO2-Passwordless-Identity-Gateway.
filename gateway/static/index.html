@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enterprise WebAuthn / FIDO2 Identity Gateway</title>
+    <style>
+        :root {
+            --bg-primary: #0d1117;
+            --bg-secondary: #161b22;
+            --bg-tertiary: #21262d;
+            --border-color: #30363d;
+            --text-primary: #c9d1d9;
+            --text-heading: #f0f6fc;
+            --text-muted: #8b949e;
+            --accent-blue: #58a6ff;
+            --accent-green: #2ea043;
+            --accent-green-hover: #3fb950;
+            --accent-red: #f85149;
+            --accent-amber: #d29922;
+            --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            line-height: 1.5;
+            padding: 24px;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+
+        header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 24px;
+        }
+
+        .logo-area {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .shield-icon {
+            background: linear-gradient(135deg, #1f6feb, #238636);
+            padding: 10px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        h1 {
+            color: var(--text-heading);
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .sub-header {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .badge-success {
+            background: rgba(46, 160, 67, 0.2);
+            color: #3fb950;
+            border: 1px solid rgba(46, 160, 67, 0.4);
+        }
+
+        .badge-warning {
+            background: rgba(210, 153, 34, 0.2);
+            color: #d29922;
+            border: 1px solid rgba(210, 153, 34, 0.4);
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            margin-bottom: 24px;
+        }
+
+        @media (max-width: 768px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .card {
+            background-color: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 20px;
+        }
+
+        .card h2 {
+            color: var(--text-heading);
+            font-size: 1.15rem;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .form-group {
+            margin-bottom: 14px;
+        }
+
+        label {
+            display: block;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-bottom: 6px;
+            font-weight: 500;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 10px 12px;
+            background-color: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            color: var(--text-heading);
+            font-size: 0.95rem;
+            transition: border-color 0.2s;
+        }
+
+        input[type="text"]:focus {
+            outline: none;
+            border-color: var(--accent-blue);
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            width: 100%;
+            padding: 10px 16px;
+            border-radius: 6px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            transition: background-color 0.2s, opacity 0.2s;
+        }
+
+        .btn-primary {
+            background-color: var(--accent-blue);
+            color: #ffffff;
+        }
+
+        .btn-primary:hover {
+            opacity: 0.9;
+        }
+
+        .btn-success {
+            background-color: var(--accent-green);
+            color: #ffffff;
+        }
+
+        .btn-success:hover {
+            background-color: var(--accent-green-hover);
+        }
+
+        .btn-danger {
+            background-color: var(--accent-red);
+            color: #ffffff;
+        }
+
+        .btn-amber {
+            background-color: var(--accent-amber);
+            color: #ffffff;
+        }
+
+        .session-panel {
+            background-color: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 24px;
+        }
+
+        .session-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .meta-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85rem;
+            margin-bottom: 16px;
+        }
+
+        .meta-table td {
+            padding: 6px 10px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .meta-table td:first-child {
+            color: var(--text-muted);
+            width: 200px;
+        }
+
+        .meta-table td:last-child {
+            font-family: var(--font-mono);
+            color: var(--text-heading);
+            word-break: break-all;
+        }
+
+        .action-row {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .action-row .btn {
+            width: auto;
+            flex: 1;
+        }
+
+        .console-card {
+            background-color: #05070a;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 16px;
+            font-family: var(--font-mono);
+            font-size: 0.8rem;
+            height: 240px;
+            overflow-y: auto;
+            color: #8b949e;
+        }
+
+        .console-entry {
+            margin-bottom: 4px;
+            line-height: 1.4;
+        }
+
+        .console-entry.info { color: #58a6ff; }
+        .console-entry.success { color: #3fb950; }
+        .console-entry.warn { color: #d29922; }
+        .console-entry.error { color: #f85149; }
+
+        .response-box {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 12px;
+            font-family: var(--font-mono);
+            font-size: 0.85rem;
+            white-space: pre-wrap;
+            word-break: break-all;
+            max-height: 200px;
+            overflow-y: auto;
+            color: var(--text-heading);
+            margin-top: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo-area">
+                <div class="shield-icon">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                        <path d="M9 12l2 2 4-4"/>
+                    </svg>
+                </div>
+                <div>
+                    <h1>Enterprise WebAuthn / FIDO2 Identity Gateway</h1>
+                    <div class="sub-header">Phishing-Resistant Public-Key Relying Party & Reverse Proxy</div>
+                </div>
+            </div>
+            <div id="statusBadge" class="badge badge-success">
+                <span>●</span> <span id="statusText">Checking WebAuthn...</span>
+            </div>
+        </header>
+
+        <!-- Registration & Login Cards -->
+        <div class="grid" id="authSection">
+            <!-- Register Card -->
+            <div class="card">
+                <h2>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                        <circle cx="8.5" cy="7.5" r="4"/>
+                        <line x1="20" y1="8" x2="20" y2="14"/>
+                        <line x1="23" y1="11" x2="17" y2="11"/>
+                    </svg>
+                    Register New Passkey
+                </h2>
+                <div class="form-group">
+                    <label for="regUsername">Corporate Username / Email</label>
+                    <input type="text" id="regUsername" placeholder="e.g. alice.security@enterprise.internal" value="alice@enterprise.corp">
+                </div>
+                <div class="form-group">
+                    <label for="regDisplayName">Full Display Name</label>
+                    <input type="text" id="regDisplayName" placeholder="e.g. Alice Cooper" value="Alice Cooper">
+                </div>
+                <button class="btn btn-success" id="btnRegister">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                        <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                    </svg>
+                    Register Passkey (Touch ID / Windows Hello / YubiKey)
+                </button>
+            </div>
+
+            <!-- Login Card -->
+            <div class="card">
+                <h2>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/>
+                        <polyline points="10 17 15 12 10 7"/>
+                        <line x1="15" y1="12" x2="3" y2="12"/>
+                    </svg>
+                    Authenticate with Passkey
+                </h2>
+                <div class="form-group">
+                    <label for="loginUsername">Username (Optional for Discoverable Credentials)</label>
+                    <input type="text" id="loginUsername" placeholder="alice@enterprise.corp (or leave blank for passkey autofill)" value="alice@enterprise.corp">
+                </div>
+                <button class="btn btn-primary" id="btnLogin" style="margin-top: 56px;">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/>
+                    </svg>
+                    Login with Passkey
+                </button>
+            </div>
+        </div>
+
+        <!-- Authenticated Session Panel (Initially Hidden) -->
+        <div class="session-panel" id="sessionPanel" style="display: none;">
+            <div class="session-header">
+                <h2>
+                    <span style="color: #3fb950;">✓</span> Active Cryptographic Session
+                </h2>
+                <div id="stepUpBadge" class="badge badge-success">
+                    Step-Up Valid: <span id="stepUpTimer">60s</span>
+                </div>
+            </div>
+
+            <table class="meta-table">
+                <tbody>
+                    <tr>
+                        <td>Authenticated Subject</td>
+                        <td id="sessUser">-</td>
+                    </tr>
+                    <tr>
+                        <td>Passkey Credential ID</td>
+                        <td id="sessCredId">-</td>
+                    </tr>
+                    <tr>
+                        <td>Signature Counter (Anti-Replay)</td>
+                        <td id="sessSignCount">-</td>
+                    </tr>
+                    <tr>
+                        <td>User Verification (UV)</td>
+                        <td id="sessUV">-</td>
+                    </tr>
+                    <tr>
+                        <td>Session Expiration</td>
+                        <td id="sessExp">60 minutes (HttpOnly Signed JWT)</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="action-row">
+                <button class="btn btn-primary" id="btnUpstream">
+                    Test Reverse Proxy (/upstream/api/confidential-records)
+                </button>
+                <button class="btn btn-amber" id="btnTransfer">
+                    Perform High-Risk Wire Transfer ($50,000)
+                </button>
+                <button class="btn btn-danger" id="btnLogout">
+                    Log Out
+                </button>
+            </div>
+
+            <div id="upstreamOutput" class="response-box" style="display: none;"></div>
+        </div>
+
+        <!-- Live Event & Cryptographic Console -->
+        <div class="card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                <h3 style="font-size: 0.95rem; color: var(--text-heading); font-weight: 600;">
+                    Live Cryptographic & Security Event Log
+                </h3>
+                <span style="font-size: 0.75rem; color: var(--text-muted); font-family: var(--font-mono);">
+                    RFC 8295 / FIDO2 Level 3
+                </span>
+            </div>
+            <div class="console-card" id="consoleLog">
+                <div class="console-entry info">[SYSTEM] Enterprise Identity Gateway loaded. Initializing WebAuthn client.</div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/webauthn_client.js"></script>
+    <script>
+        const logContainer = document.getElementById("consoleLog");
+
+        function log(msg, type = "info") {
+            const entry = document.createElement("div");
+            entry.className = `console-entry ${type}`;
+            const ts = new Date().toISOString().split("T")[1].slice(0, 8);
+            entry.textContent = `[${ts}] ${msg}`;
+            logContainer.appendChild(entry);
+            logContainer.scrollTop = logContainer.scrollHeight;
+        }
+
+        // Initialize status
+        if (window.webAuthnClient.isSupported()) {
+            document.getElementById("statusText").textContent = "FIDO2 / WebAuthn Supported";
+            log("WebAuthn API detected: navigator.credentials is active.", "success");
+        } else {
+            document.getElementById("statusBadge").className = "badge badge-warning";
+            document.getElementById("statusText").textContent = "WebAuthn Not Available";
+            log("WebAuthn is not supported on this browser.", "error");
+        }
+
+        let stepUpInterval = null;
+
+        function updateStepUpTimer(secondsRemaining) {
+            const badge = document.getElementById("stepUpBadge");
+            const timer = document.getElementById("stepUpTimer");
+            if (secondsRemaining <= 0) {
+                badge.className = "badge badge-warning";
+                badge.textContent = "Step-Up Expired (Re-Auth Required for Transfer)";
+                if (stepUpInterval) clearInterval(stepUpInterval);
+            } else {
+                badge.className = "badge badge-success";
+                timer.textContent = `${secondsRemaining}s`;
+            }
+        }
+
+        async function refreshSessionProfile() {
+            try {
+                const res = await fetch("/api/auth/me");
+                if (res.ok) {
+                    const data = await res.json();
+                    document.getElementById("authSection").style.display = "none";
+                    document.getElementById("sessionPanel").style.display = "block";
+                    document.getElementById("sessUser").textContent = `${data.user.displayName} (${data.user.username})`;
+                    document.getElementById("sessCredId").textContent = data.session.credential_id || "N/A";
+                    
+                    const cred = data.credentials.find(c => c.id === data.session.credential_id) || data.credentials[0];
+                    document.getElementById("sessSignCount").textContent = cred ? `${cred.sign_count} (Hardware Protected)` : "0";
+                    document.getElementById("sessUV").textContent = data.session.user_verified ? "Yes (Biometric / PIN verified)" : "No (User Presence only)";
+                    
+                    let remaining = data.session.step_up_remaining_seconds;
+                    updateStepUpTimer(remaining);
+                    if (stepUpInterval) clearInterval(stepUpInterval);
+                    stepUpInterval = setInterval(() => {
+                        remaining -= 1;
+                        updateStepUpTimer(remaining);
+                    }, 1000);
+
+                    log(`Session restored for user: ${data.user.username}`, "info");
+                } else {
+                    document.getElementById("authSection").style.display = "grid";
+                    document.getElementById("sessionPanel").style.display = "none";
+                    if (stepUpInterval) clearInterval(stepUpInterval);
+                }
+            } catch (err) {
+                document.getElementById("authSection").style.display = "grid";
+                document.getElementById("sessionPanel").style.display = "none";
+            }
+        }
+
+        // Register Button Handler
+        document.getElementById("btnRegister").addEventListener("click", async () => {
+            const username = document.getElementById("regUsername").value.trim();
+            const displayName = document.getElementById("regDisplayName").value.trim();
+
+            if (!username) {
+                alert("Please enter a username.");
+                return;
+            }
+
+            try {
+                log(`Initiating WebAuthn registration for: ${username}...`, "info");
+                const res = await window.webAuthnClient.register(username, displayName);
+                log(`Registration successful! Credential ID: ${res.credential_id.slice(0, 24)}...`, "success");
+                log(`Attestation verified. AAGUID: ${res.aaguid || "None"}. Initial Counter: 0.`, "success");
+                alert("Passkey successfully registered! You can now authenticate with it.");
+            } catch (err) {
+                log(`Registration Error: ${err.message}`, "error");
+                alert(`Registration failed: ${err.message}`);
+            }
+        });
+
+        // Login Button Handler
+        document.getElementById("btnLogin").addEventListener("click", async () => {
+            const username = document.getElementById("loginUsername").value.trim();
+
+            try {
+                log(`Initiating WebAuthn authentication ceremony...`, "info");
+                const res = await window.webAuthnClient.login(username);
+                log(`Assertion signature verified! Counter: ${res.session.sign_count}`, "success");
+                log(`User Verification: ${res.session.user_verified ? "True (UV Flag)" : "False"}`, "info");
+                log(`HttpOnly Session JWT issued. Anti-replay check passed.`, "success");
+                await refreshSessionProfile();
+            } catch (err) {
+                log(`Authentication Error: ${err.message}`, "error");
+                alert(`Authentication failed: ${err.message}`);
+            }
+        });
+
+        // Upstream Reverse Proxy Test
+        document.getElementById("btnUpstream").addEventListener("click", async () => {
+            const output = document.getElementById("upstreamOutput");
+            output.style.display = "block";
+            output.textContent = "Forwarding request via Gateway Reverse Proxy to Upstream...";
+            try {
+                const res = await fetch("/upstream/api/confidential-records");
+                const json = await res.json();
+                output.textContent = JSON.stringify(json, null, 2);
+                log(`Reverse proxy call to /upstream/api/confidential-records returned ${res.status}`, "success");
+            } catch (err) {
+                output.textContent = `Error connecting via proxy: ${err.message}`;
+                log(`Reverse proxy error: ${err.message}`, "error");
+            }
+        });
+
+        // Step-Up Wire Transfer
+        document.getElementById("btnTransfer").addEventListener("click", async () => {
+            const output = document.getElementById("upstreamOutput");
+            output.style.display = "block";
+            output.textContent = "Authorizing $50,000 High-Value Wire Transfer...";
+
+            try {
+                const res = await fetch("/api/admin/transfer", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        recipient: "Global Treasury Escrow #4912",
+                        amount: 50000.00,
+                        description: "Emergency Liquidity Rebalance"
+                    })
+                });
+
+                const data = await res.json();
+                if (res.status === 403 && data.error === "step_up_required") {
+                    log(`Step-up required: ${data.message}`, "warn");
+                    output.textContent = `[STEP-UP MANDATE]\n${data.message}\nPrompting Passkey re-authentication...`;
+                    
+                    const confirmReauth = confirm("Step-up authentication required! Re-authenticate with your Passkey now?");
+                    if (confirmReauth) {
+                        const loginUser = document.getElementById("sessUser").textContent.split("(")[1]?.replace(")", "") || "";
+                        await window.webAuthnClient.login(loginUser);
+                        log("Step-up re-authentication succeeded! Retrying wire transfer...", "success");
+                        // Retry transfer
+                        const retryRes = await fetch("/api/admin/transfer", {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({
+                                recipient: "Global Treasury Escrow #4912",
+                                amount: 50000.00,
+                                description: "Emergency Liquidity Rebalance"
+                            })
+                        });
+                        const retryData = await retryRes.json();
+                        output.textContent = JSON.stringify(retryData, null, 2);
+                        log(`Wire transfer authorized via Step-Up! Status: ${retryData.status}`, "success");
+                        await refreshSessionProfile();
+                    }
+                } else {
+                    output.textContent = JSON.stringify(data, null, 2);
+                    log(`Transfer endpoint response: ${res.status}`, res.ok ? "success" : "warn");
+                }
+            } catch (err) {
+                output.textContent = `Transfer error: ${err.message}`;
+                log(`Transfer error: ${err.message}`, "error");
+            }
+        });
+
+        // Logout
+        document.getElementById("btnLogout").addEventListener("click", async () => {
+            await fetch("/api/auth/logout", { method: "POST" });
+            log("Session terminated. HttpOnly cookie cleared.", "info");
+            await refreshSessionProfile();
+        });
+
+        // Initial check on load
+        refreshSessionProfile();
+    </script>
+</body>
+</html>
