@@ -1,0 +1,47 @@
+name: CI - Lint, Unit & Headless FIDO2 E2E Tests
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    name: Test on Python ${{ matrix.python-version }}
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.11", "3.12"]
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: 'pip'
+
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install ruff
+
+      - name: Install Playwright Chromium & OS Dependencies
+        run: |
+          playwright install --with-deps chromium
+
+      - name: Lint Code with Ruff
+        run: |
+          ruff check . --ignore E501
+
+      - name: Run Cryptographic & Counter Anti-Replay Unit Tests
+        run: |
+          pytest tests/test_crypto_verification.py tests/test_counter_replay.py -v
+
+      - name: Run Headless Playwright CDP Virtual Authenticator Tests
+        run: |
+          pytest tests/test_e2e_virtual_auth.py -v
