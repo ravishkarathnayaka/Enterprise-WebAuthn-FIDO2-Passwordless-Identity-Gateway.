@@ -15,6 +15,7 @@ from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
 from gateway.config import settings
+from gateway.crypto.aaguid_lookup import resolve_aaguid
 from gateway.crypto.audit_logger import audit_logger
 from gateway.crypto.authentication import (
     CounterReplayError,
@@ -38,12 +39,14 @@ from gateway.middleware.rate_limit import RateLimitMiddleware
 from gateway.middleware.telemetry import TelemetryMiddleware, metrics
 from gateway.storage.challenge_store import challenge_store
 from gateway.storage.database import (
+    delete_credential,
     get_credential_by_id,
     get_credentials_for_user,
     get_or_create_user,
     get_user_by_id,
     get_user_by_username,
     init_db,
+    rename_credential,
     save_credential,
     update_credential_sign_count,
 )
@@ -120,6 +123,10 @@ class TransferRequest(BaseModel):
     recipient: str = "Corporate Escrow Acct #8829"
     amount: float = 50000.00
     description: str | None = "High-Value Wire Transfer"
+
+
+class RenameCredentialRequest(BaseModel):
+    nickname: str = Field(..., min_length=1, max_length=100)
 
 
 # Authentication Dependency Helper
@@ -504,8 +511,10 @@ async def get_current_user_profile(session: dict[str, Any] = Depends(get_current
         "credentials": [
             {
                 "id": c.id,
+                "nickname": c.nickname,
                 "sign_count": c.sign_count,
                 "aaguid": c.aaguid,
+                "metadata": resolve_aaguid(c.aaguid),
                 "transports": c.transport_list,
                 "created_at": c.created_at.isoformat() if c.created_at else None,
                 "last_used_at": c.last_used_at.isoformat() if c.last_used_at else None,
@@ -513,6 +522,61 @@ async def get_current_user_profile(session: dict[str, Any] = Depends(get_current
             for c in credentials
         ],
     }
+
+
+@app.get("/api/credentials")
+async def list_user_credentials(session: dict[str, Any] = Depends(get_current_session)):
+    """Retrieve all registered Passkeys for current user with AAGUID metadata."""
+    credentials = await get_credentials_for_user(session["uid"])
+    return {
+        "status": "ok",
+        "credentials": [
+            {
+                "id": c.id,
+                "nickname": c.nickname or resolve_aaguid(c.aaguid)["model"],
+                "sign_count": c.sign_count,
+                "aaguid": c.aaguid,
+                "metadata": resolve_aaguid(c.aaguid),
+                "transports": c.transport_list,
+                "created_at": c.created_at.isoformat() if c.created_at else None,
+                "last_used_at": c.last_used_at.isoformat() if c.last_used_at else None,
+            }
+            for c in credentials
+        ],
+    }
+
+
+@app.patch("/api/credentials/{credential_id}")
+async def rename_user_credential(
+    credential_id: str,
+    req: RenameCredentialRequest,
+    session: dict[str, Any] = Depends(get_current_session),
+):
+    """Update friendly nickname for a specific registered Passkey."""
+    success = await rename_credential(credential_id, session["uid"], req.nickname.strip())
+    if not success:
+        raise HTTPException(status_code=404, detail="Credential not found or unauthorized.")
+    return {"status": "ok", "message": "Passkey renamed successfully.", "nickname": req.nickname.strip()}
+
+
+@app.delete("/api/credentials/{credential_id}")
+async def revoke_user_credential(
+    credential_id: str,
+    session: dict[str, Any] = Depends(get_current_session),
+):
+    """Revoke and delete a specific registered Passkey."""
+    success = await delete_credential(credential_id, session["uid"])
+    if not success:
+        raise HTTPException(status_code=404, detail="Credential not found or unauthorized.")
+
+    audit_logger.emit_event(
+        event_name="PASSKEY_REVOKED",
+        severity=5,
+        user_id=session["uid"],
+        credential_id=credential_id,
+        metadata={"action": "USER_INITIATED_REVOCATION"},
+    )
+    return {"status": "ok", "message": "Passkey revoked successfully."}
 
 
 @app.post("/api/admin/transfer")

@@ -56,6 +56,7 @@ class Credential(Base):
     public_key = Column(LargeBinary, nullable=False)  # Raw public key bytes (COSE/PEM)
     sign_count = Column(Integer, default=0, nullable=False)
     aaguid = Column(String(64), nullable=True)
+    nickname = Column(String(100), nullable=True)  # Friendly label (e.g. Work MacBook TouchID)
     transports = Column(Text, nullable=True)  # JSON-encoded transports list
     created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(UTC))
     last_used_at = Column(DateTime(timezone=True), default=lambda: datetime.now(UTC))
@@ -163,3 +164,30 @@ async def update_credential_sign_count(credential_id: str, new_sign_count: int) 
             cred.sign_count = new_sign_count
             cred.last_used_at = datetime.now(UTC)
             await session.commit()
+
+
+async def delete_credential(credential_id: str, user_id: str) -> bool:
+    """Revoke and delete a specific credential belonging to a user."""
+    async with AsyncSessionLocal() as session:
+        query = select(Credential).where(Credential.id == credential_id, Credential.user_id == user_id)
+        result = await session.execute(query)
+        cred = result.scalar_one_or_none()
+        if cred:
+            await session.delete(cred)
+            await session.commit()
+            return True
+        return False
+
+
+async def rename_credential(credential_id: str, user_id: str, nickname: str) -> bool:
+    """Update friendly label/nickname for a user credential."""
+    async with AsyncSessionLocal() as session:
+        query = select(Credential).where(Credential.id == credential_id, Credential.user_id == user_id)
+        result = await session.execute(query)
+        cred = result.scalar_one_or_none()
+        if cred:
+            cred.nickname = nickname
+            await session.commit()
+            return True
+        return False
+
