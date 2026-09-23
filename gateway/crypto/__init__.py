@@ -9,6 +9,7 @@ from gateway.crypto.registration import (
     generate_registration_challenge,
     verify_registration,
 )
+from gateway.crypto.token_revocation import token_revocation
 from gateway.crypto.tokens import create_session_token, verify_session_token
 
 __all__ = [
@@ -19,6 +20,7 @@ __all__ = [
     "generate_authentication_challenge",
     "generate_registration_challenge",
     "resolve_aaguid",
+    "token_revocation",
     "verify_authentication",
     "verify_registration",
     "verify_session_token",

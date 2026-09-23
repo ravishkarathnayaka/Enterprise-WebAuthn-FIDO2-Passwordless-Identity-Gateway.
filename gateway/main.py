@@ -26,6 +26,7 @@ from gateway.crypto.registration import (
     generate_registration_challenge,
     verify_registration,
 )
+from gateway.crypto.token_revocation import token_revocation
 from gateway.crypto.tokens import (
     clear_session_cookie,
     create_session_token,
@@ -137,6 +138,11 @@ async def get_current_session(request: Request) -> dict[str, Any]:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Session token required. Authenticate with a passkey.",
+        )
+    if await token_revocation.is_revoked(token):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Session has been revoked.",
         )
     payload = verify_session_token(token)
     if not payload:
@@ -476,8 +482,11 @@ async def login_verify(req: LoginVerifyRequest, response: Response):
 # --------------------------------------------------------------------------
 
 @app.post("/api/auth/logout")
-async def logout(response: Response):
-    """Invalidate session cookie."""
+async def logout(request: Request, response: Response):
+    """Invalidate session cookie and add token to revocation blocklist."""
+    token = extract_token_from_request(request)
+    if token:
+        await token_revocation.revoke(token)
     clear_session_cookie(response)
     return {"status": "ok", "message": "Logged out successfully."}
 
