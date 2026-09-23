@@ -10,7 +10,7 @@ from typing import Any
 
 from fastapi import Depends, FastAPI, HTTPException, Request, Response, status
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse, JSONResponse
+from fastapi.responses import FileResponse, JSONResponse, PlainTextResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
@@ -33,6 +33,7 @@ from gateway.crypto.tokens import (
     verify_session_token,
 )
 from gateway.middleware.auth_proxy import AuthProxyMiddleware, proxy_upstream_request
+from gateway.middleware.telemetry import TelemetryMiddleware, metrics
 from gateway.storage.challenge_store import challenge_store
 from gateway.storage.database import (
     get_credential_by_id,
@@ -83,6 +84,7 @@ app.add_middleware(
 
 # Reverse Proxy & Auth Middleware
 app.add_middleware(AuthProxyMiddleware)
+app.add_middleware(TelemetryMiddleware)
 
 # Static files directory
 STATIC_DIR = os.path.join(os.path.dirname(__file__), "static")
@@ -177,6 +179,12 @@ async def health_check():
     }
 
 
+@app.get("/metrics", response_class=PlainTextResponse)
+async def get_prometheus_metrics():
+    """Expose Prometheus telemetry and ceremony performance metrics."""
+    return PlainTextResponse(metrics.generate_prometheus_metrics(), media_type="text/plain")
+
+
 # --------------------------------------------------------------------------
 # WebAuthn Registration Ceremony
 # --------------------------------------------------------------------------
@@ -269,6 +277,7 @@ async def registration_verify(req: RegisterVerifyRequest):
     )
 
     logger.info(f"Registered new Passkey for user_id={user_id}, cred_id={saved_cred.id[:16]}...")
+    metrics.record_registration()
 
     return {
         "status": "ok",
@@ -361,6 +370,8 @@ async def login_verify(req: LoginVerifyRequest, response: Response):
         logger.critical(
             f"[CRITICAL SECURITY BREACH] Anti-replay counter violation for Credential ID={stored_cred.id}: {replay_err}"
         )
+        metrics.record_counter_replay_violation()
+        metrics.record_authentication("replay_detected")
         return JSONResponse(
             status_code=status.HTTP_403_FORBIDDEN,
             content={
@@ -372,6 +383,7 @@ async def login_verify(req: LoginVerifyRequest, response: Response):
         )
     except Exception as ex:
         logger.error(f"Assertion verification error: {ex}")
+        metrics.record_authentication("failure")
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"Assertion verification failed: {ex!s}",
@@ -379,6 +391,7 @@ async def login_verify(req: LoginVerifyRequest, response: Response):
 
     # Update stored sign counter
     await update_credential_sign_count(stored_cred.id, verified["new_sign_count"])
+    metrics.record_authentication("success")
 
     # Retrieve user
     user = await get_user_by_id(stored_cred.user_id)
