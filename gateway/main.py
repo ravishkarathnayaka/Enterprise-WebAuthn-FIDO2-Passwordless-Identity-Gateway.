@@ -33,6 +33,7 @@ from gateway.crypto.tokens import (
     verify_session_token,
 )
 from gateway.middleware.auth_proxy import AuthProxyMiddleware, proxy_upstream_request
+from gateway.middleware.rate_limit import RateLimitMiddleware
 from gateway.middleware.telemetry import TelemetryMiddleware, metrics
 from gateway.storage.challenge_store import challenge_store
 from gateway.storage.database import (
@@ -85,6 +86,7 @@ app.add_middleware(
 # Reverse Proxy & Auth Middleware
 app.add_middleware(AuthProxyMiddleware)
 app.add_middleware(TelemetryMiddleware)
+app.add_middleware(RateLimitMiddleware)
 
 # Static files directory
 STATIC_DIR = os.path.join(os.path.dirname(__file__), "static")
