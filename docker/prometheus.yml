@@ -1,0 +1,13 @@
+# Prometheus Scraper Configuration for Enterprise WebAuthn Gateway
+global:
+  scrape_interval: 5s
+  evaluation_interval: 5s
+
+scrape_configs:
+  - job_name: "webauthn-gateway"
+    metrics_path: "/metrics"
+    static_configs:
+      - targets: ["gateway:8000"]
+        labels:
+          environment: "production"
+          service: "fido2-identity-gateway"

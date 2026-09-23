@@ -66,6 +66,21 @@ services:
     networks:
       - identity_net
 
+  # Prometheus Telemetry & SIEM Observability Collector
+  prometheus:
+    image: prom/prometheus:v2.48.0
+    container_name: webauthn_prometheus
+    restart: unless-stopped
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    depends_on:
+      - gateway
+    networks:
+      - identity_net
+
 networks:
   identity_net:
     driver: bridge
@@ -73,3 +88,4 @@ networks:
 volumes:
   gateway_db_data:
   redis_data:
+  prometheus_data:
