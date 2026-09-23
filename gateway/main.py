@@ -15,6 +15,7 @@ from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
 from gateway.config import settings
+from gateway.crypto.audit_logger import audit_logger
 from gateway.crypto.authentication import (
     CounterReplayError,
     generate_authentication_challenge,
@@ -280,6 +281,13 @@ async def registration_verify(req: RegisterVerifyRequest):
 
     logger.info(f"Registered new Passkey for user_id={user_id}, cred_id={saved_cred.id[:16]}...")
     metrics.record_registration()
+    audit_logger.emit_event(
+        event_name="PASSKEY_REGISTRATION_SUCCESS",
+        severity=3,
+        user_id=user_id,
+        credential_id=saved_cred.id,
+        metadata={"aaguid": verified["aaguid"], "user_verified": verified["user_verified"]},
+    )
 
     return {
         "status": "ok",
@@ -374,6 +382,17 @@ async def login_verify(req: LoginVerifyRequest, response: Response):
         )
         metrics.record_counter_replay_violation()
         metrics.record_authentication("replay_detected")
+        audit_logger.emit_event(
+            event_name="PASSKEY_COUNTER_REPLAY_DETECTED",
+            severity=10,
+            user_id=stored_cred.user_id,
+            credential_id=stored_cred.id,
+            metadata={
+                "stored_counter": replay_err.stored_counter,
+                "received_counter": replay_err.received_counter,
+                "alert": "POTENTIAL_TOKEN_CLONING",
+            },
+        )
         return JSONResponse(
             status_code=status.HTTP_403_FORBIDDEN,
             content={
@@ -402,6 +421,15 @@ async def login_verify(req: LoginVerifyRequest, response: Response):
             status_code=status.HTTP_404_NOT_FOUND,
             detail="User associated with credential not found.",
         )
+
+    audit_logger.emit_event(
+        event_name="PASSKEY_AUTHENTICATION_SUCCESS",
+        severity=2,
+        user_id=user.id,
+        username=user.username,
+        credential_id=stored_cred.id,
+        metadata={"sign_count": verified["new_sign_count"], "user_verified": verified["user_verified"]},
+    )
 
     # Issue short-lived cryptographically signed session token
     token = create_session_token(
