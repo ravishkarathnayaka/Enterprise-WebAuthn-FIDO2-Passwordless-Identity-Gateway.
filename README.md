@@ -326,6 +326,79 @@ The Gateway enforces risk-based step-up authentication policies:
 
 ---
 
+## Enterprise Observability & Prometheus Telemetry
+
+The gateway exposes a production-ready `/metrics` endpoint compatible with Prometheus, Grafana, and Datadog agents:
+
+```text
+# HELP webauthn_registration_requests_total Total number of WebAuthn registration ceremonies.
+# TYPE webauthn_registration_requests_total counter
+webauthn_registration_requests_total 24
+
+# HELP webauthn_authentication_attempts_total Total WebAuthn authentication attempts by outcome.
+# TYPE webauthn_authentication_attempts_total counter
+webauthn_authentication_attempts_total{status="success"} 68
+webauthn_authentication_attempts_total{status="replay_detected"} 3
+
+# HELP webauthn_counter_replay_violations_total Number of detected cloned hardware key replay attempts.
+# TYPE webauthn_counter_replay_violations_total counter
+webauthn_counter_replay_violations_total 3
+
+# HELP gateway_http_requests_total Total HTTP requests routed through Identity Gateway.
+# TYPE gateway_http_requests_total counter
+gateway_http_requests_total{method="POST",path="/api/auth/login/verify",status="200"} 68
+```
+
+A pre-configured Prometheus scraper is included in `docker/prometheus.yml` and orchestrated via `docker/docker-compose.yml` on port `9090`.
+
+---
+
+## Passkey Credential Lifecycle Management
+
+The gateway provides RESTful endpoints to manage enrolled hardware passkeys and inspect FIDO2 AAGUID metadata:
+
+- **List User Credentials**: `GET /api/credentials` (Returns active passkeys, AAGUIDs, assurance tiers, and transport capabilities)
+- **Rename Passkey Label**: `PUT /api/credentials/{credential_id}` (`{"nickname": "Work MacBook Pro M3"}`)
+- **Revoke Credential**: `DELETE /api/credentials/{credential_id}` (Quarantines and deletes the public key from the database)
+- **Session Revocation**: `POST /api/auth/logout` (Blacklists active session tokens in Redis / memory cache)
+
+---
+
+## Deep Kubernetes Health & Readiness Probes
+
+Designed for zero-downtime rolling Kubernetes deployments:
+- **Liveness Probe**: `GET /health/liveness` (Confirms process event loop responsiveness)
+- **Readiness Probe**: `GET /health/readiness` (Performs deep checks verifying SQLite/PostgreSQL connectivity, Redis challenge cache read/write, and cryptographic Relying Party initialization)
+
+```json
+{
+  "status": "ready",
+  "checks": {
+    "database": "ok",
+    "challenge_cache": "ok",
+    "crypto_rp": "ok"
+  },
+  "rp_id": "localhost",
+  "timestamp": 1727108400
+}
+```
+
+---
+
+## Architecture Decision Records (ADRs)
+
+Key security and architectural choices are formally documented:
+- [ADR-001: Monotonic Signature Counter Anti-Replay Verification](docs/adr/001-monotonic-counter-verification.md)
+- [ADR-002: Zero-Trust Authenticator Attestation and AAGUID Evaluation](docs/adr/002-zero-trust-passkey-attestation.md)
+
+---
+
+## Security Policy & Incident Runbooks
+
+For vulnerability disclosure and cloned hardware token containment procedures, refer to [SECURITY.md](SECURITY.md).
+
+---
+
 ## License
 
 This project is licensed under the [MIT License](LICENSE).
