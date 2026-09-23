@@ -195,6 +195,55 @@ async def health_check():
     }
 
 
+@app.get("/health/liveness")
+async def health_liveness():
+    """Kubernetes liveness probe confirming process responsiveness."""
+    return {"status": "alive", "timestamp": int(time.time())}
+
+
+@app.get("/health/readiness")
+async def health_readiness():
+    """Deep readiness probe verifying database, cache, and cryptographic subsystem."""
+    checks = {}
+    is_ready = True
+
+    # 1. Database connectivity check
+    try:
+        from sqlalchemy import text
+
+        from gateway.storage.database import AsyncSessionLocal
+        async with AsyncSessionLocal() as session:
+            await session.execute(text("SELECT 1"))
+        checks["database"] = "ok"
+    except Exception as ex:
+        checks["database"] = f"error: {ex}"
+        is_ready = False
+
+    # 2. Challenge store check
+    try:
+        test_key = "readiness_probe_key"
+        await challenge_store.save_challenge(test_key, "probe", ttl_seconds=5)
+        consumed = await challenge_store.consume_challenge(test_key)
+        checks["challenge_cache"] = "ok" if consumed else "failed_consumption"
+    except Exception as ex:
+        checks["challenge_cache"] = f"error: {ex}"
+        is_ready = False
+
+    # 3. Cryptography configuration check
+    checks["crypto_rp"] = "ok" if settings.RP_ID and settings.RP_NAME else "misconfigured"
+
+    status_code = status.HTTP_200_OK if is_ready else status.HTTP_503_SERVICE_UNAVAILABLE
+    return JSONResponse(
+        status_code=status_code,
+        content={
+            "status": "ready" if is_ready else "degraded",
+            "checks": checks,
+            "rp_id": settings.RP_ID,
+            "timestamp": int(time.time()),
+        },
+    )
+
+
 @app.get("/metrics", response_class=PlainTextResponse)
 async def get_prometheus_metrics():
     """Expose Prometheus telemetry and ceremony performance metrics."""

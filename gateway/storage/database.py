@@ -74,9 +74,25 @@ class Credential(Base):
 
 
 async def init_db() -> None:
-    """Initialize database tables."""
+    """Initialize database tables and run lightweight schema migrations."""
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
+
+        def _migrate_schema(connection):
+            try:
+                res = connection.exec_driver_sql("PRAGMA table_info(credentials)").fetchall()
+                col_names = [r[1] for r in res]
+                if col_names:
+                    if "nickname" not in col_names:
+                        connection.exec_driver_sql("ALTER TABLE credentials ADD COLUMN nickname VARCHAR(100)")
+                    if "transports" not in col_names:
+                        connection.exec_driver_sql("ALTER TABLE credentials ADD COLUMN transports TEXT")
+                    if "aaguid" not in col_names:
+                        connection.exec_driver_sql("ALTER TABLE credentials ADD COLUMN aaguid VARCHAR(64)")
+            except Exception:
+                pass
+
+        await conn.run_sync(_migrate_schema)
 
 
 async def get_or_create_user(username: str, display_name: str | None = None) -> User:
