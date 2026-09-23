@@ -23,7 +23,57 @@ const state = {
     authTime: null,
     stepUpTimer: null,
     stepUpRemaining: 60,
-  }
+  },
+  registeredKeys: [
+    {
+      id: "aXJ1OWZzN2FzZGY4YWFzZGZhc2RmOTg3Y2JhcWVyMTE=",
+      nickname: "Work MacBook Pro (Touch ID)",
+      aaguid: "ea9b8d66-4d01-1d21-3ce2-b6b47c66d10c",
+      vendor: "Apple Inc.",
+      model: "Apple Secure Enclave (Touch ID / Face ID)",
+      assurance: "L2 - Hardware Secure Enclave",
+      formFactor: "platform",
+      signCount: 10,
+      transports: ["internal"],
+      createdAt: "2026-09-20T14:32:00Z"
+    },
+    {
+      id: "bW9iaWxlX2ZpZG8yX2tleV84ODNhYmNkZQ==",
+      nickname: "Corporate YubiKey 5 NFC (Hardware Token)",
+      aaguid: "ee5537a5-911a-4c91-881e-9883380b997f",
+      vendor: "Yubico",
+      model: "YubiKey 5 Series (NFC / USB-C)",
+      assurance: "L3 - FIPS 140-2 Level 3 Hardware",
+      formFactor: "roaming",
+      signCount: 47,
+      transports: ["usb", "nfc"],
+      createdAt: "2026-09-18T09:15:00Z"
+    },
+    {
+      id: "d2luZG93c19oZWxsb190cG1fOTg3MTIzNDU=",
+      nickname: "Engineering ThinkPad (Windows Hello)",
+      aaguid: "08987058-cadc-4b81-b6e1-30de50dcbe96",
+      vendor: "Windows Hello",
+      model: "Microsoft Windows Hello (TPM 2.0)",
+      assurance: "L2 - Hardware TPM Protected",
+      formFactor: "platform",
+      signCount: 23,
+      transports: ["internal"],
+      createdAt: "2026-09-15T11:20:00Z"
+    },
+    {
+      id: "Z29vZ2xlX3RpdGFuX3NlY3VyaXR5X2tleV8wMQ==",
+      nickname: "Root Admin Titan FIDO2 Key",
+      aaguid: "42358055-680c-4861-a08b-6f29da2d80d5",
+      vendor: "Google",
+      model: "Google Titan Security Key",
+      assurance: "L3 - Common Criteria EAL6+ Chip",
+      formFactor: "roaming",
+      signCount: 8,
+      transports: ["usb", "nfc"],
+      createdAt: "2026-09-10T16:45:00Z"
+    }
+  ]
 };
 
 // Utilities
@@ -367,6 +417,148 @@ async function handleLiveRegistration() {
 }
 
 // -----------------------------------------------------------------------------
+// Credential Management & AAGUID Badges
+// -----------------------------------------------------------------------------
+
+function renderCredentials() {
+  const container = document.getElementById("credentialsListGrid");
+  if (!container) return;
+
+  container.innerHTML = "";
+
+  if (state.registeredKeys.length === 0) {
+    container.innerHTML = `
+      <div class="glass-card" style="grid-column: 1 / -1; text-align: center; padding: 40px;">
+        <p style="color: var(--text-muted); font-size: 1.1rem; margin-bottom: 16px;">No passkeys registered yet.</p>
+        <button class="cyber-btn cyber-btn-emerald" onclick="enrollDemoKey()">Enroll First Hardware Key</button>
+      </div>
+    `;
+    return;
+  }
+
+  state.registeredKeys.forEach(cred => {
+    const card = document.createElement("div");
+    card.className = "glass-card";
+    card.style.display = "flex";
+    card.style.flexDirection = "column";
+    card.style.justifyContent = "space-between";
+
+    const transportsHtml = cred.transports
+      ? cred.transports.map(t => `<span class="threat-badge badge-defense" style="font-size: 0.72rem; padding: 2px 8px; margin-right: 4px;">${t.toUpperCase()}</span>`).join("")
+      : "";
+
+    card.innerHTML = `
+      <div>
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
+          <div>
+            <span class="threat-badge badge-defense" style="margin-bottom: 6px;">${cred.assurance}</span>
+            <h4 style="font-size: 1.15rem; color: var(--text-primary); margin-top: 4px;">${cred.nickname}</h4>
+          </div>
+          <span style="font-size: 0.75rem; color: var(--accent-cyan); font-family: var(--font-mono);">${cred.vendor}</span>
+        </div>
+
+        <div style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 10px;">
+          <strong>Model:</strong> ${cred.model}
+        </div>
+
+        <div style="font-size: 0.8rem; font-family: var(--font-mono); color: var(--text-muted); word-break: break-all; margin-bottom: 12px; background: rgba(0,0,0,0.3); padding: 8px; border-radius: 6px;">
+          <div><strong>AAGUID:</strong> ${cred.aaguid}</div>
+          <div style="margin-top: 4px;"><strong>Credential ID:</strong> ${cred.id.slice(0, 24)}...</div>
+        </div>
+
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+          <div style="font-size: 0.85rem; color: var(--text-secondary);">
+            Counter: <span style="font-family: var(--font-mono); color: var(--accent-emerald); font-weight: 700;">${cred.signCount}</span>
+          </div>
+          <div>${transportsHtml}</div>
+        </div>
+      </div>
+
+      <div style="display: flex; gap: 8px; border-top: 1px solid var(--border-subtle); padding-top: 14px; margin-top: 10px;">
+        <button class="cyber-btn cyber-btn-outline" style="flex: 1; padding: 8px;" onclick="renameCredentialPrompt('${cred.id}')">
+          Rename
+        </button>
+        <button class="cyber-btn" style="flex: 1; padding: 8px; background: rgba(244, 63, 94, 0.2); color: #fca5a5; border: 1px solid rgba(244, 63, 94, 0.3);" onclick="revokeCredential('${cred.id}')">
+          Revoke
+        </button>
+      </div>
+    `;
+
+    container.appendChild(card);
+  });
+}
+
+function renameCredentialPrompt(credId) {
+  const cred = state.registeredKeys.find(c => c.id === credId);
+  if (!cred) return;
+
+  const newName = prompt(`Enter new friendly name for ${cred.vendor} passkey:`, cred.nickname);
+  if (newName && newName.trim()) {
+    cred.nickname = newName.trim();
+    renderCredentials();
+    logTerminal(`[CREDENTIAL_MANAGEMENT] Renamed passkey (${cred.id.slice(0, 12)}...) to '${cred.nickname}'`, "info");
+  }
+}
+
+function revokeCredential(credId) {
+  const cred = state.registeredKeys.find(c => c.id === credId);
+  if (!cred) return;
+
+  if (confirm(`Are you sure you want to permanently revoke '${cred.nickname}'? It will be removed from the authenticator registry.`)) {
+    state.registeredKeys = state.registeredKeys.filter(c => c.id !== credId);
+    renderCredentials();
+    logTerminal(`[SECURITY_ALERT] Permanently revoked credential: ${cred.id.slice(0, 16)}... (${cred.model})`, "danger");
+  }
+}
+
+function enrollDemoKey() {
+  const vendors = [
+    {
+      vendor: "Yubico",
+      model: "YubiKey Bio Series (Biometric Hardware)",
+      assurance: "L3 - Biometric Hardware Sensor",
+      aaguid: "fa2b99dc-9e39-4257-8f92-4a30d23c4118",
+      formFactor: "roaming",
+      transports: ["usb", "nfc"]
+    },
+    {
+      vendor: "Apple Inc.",
+      model: "Apple Secure Enclave (Touch ID / Face ID)",
+      assurance: "L2 - Hardware Secure Enclave",
+      aaguid: "ea9b8d66-4d01-1d21-3ce2-b6b47c66d10c",
+      formFactor: "platform",
+      transports: ["internal"]
+    },
+    {
+      vendor: "Google",
+      model: "Google Titan Security Key",
+      assurance: "L3 - Common Criteria EAL6+ Chip",
+      aaguid: "42358055-680c-4861-a08b-6f29da2d80d5",
+      formFactor: "roaming",
+      transports: ["usb", "nfc"]
+    }
+  ];
+
+  const pick = vendors[Math.floor(Math.random() * vendors.length)];
+  const newCred = {
+    id: generateRandomBase64URL(32),
+    nickname: `${pick.vendor} Enrolled Token #${state.registeredKeys.length + 1}`,
+    aaguid: pick.aaguid,
+    vendor: pick.vendor,
+    model: pick.model,
+    assurance: pick.assurance,
+    formFactor: pick.formFactor,
+    signCount: 0,
+    transports: pick.transports,
+    createdAt: new Date().toISOString()
+  };
+
+  state.registeredKeys.unshift(newCred);
+  renderCredentials();
+  logTerminal(`[CREDENTIAL_ENROLL] Registered new authenticator: ${newCred.nickname} (AAGUID: ${newCred.aaguid})`, "success");
+}
+
+// -----------------------------------------------------------------------------
 // UI Tabs & Event Listeners
 // -----------------------------------------------------------------------------
 
@@ -387,6 +579,7 @@ document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("btnSimReplay")?.addEventListener("click", () => simulateAuthentication(true));
   document.getElementById("btnSimTransfer")?.addEventListener("click", () => simulateStepUpTransfer());
   document.getElementById("btnSimUpstream")?.addEventListener("click", () => simulateUpstreamProxy());
+  document.getElementById("btnAddDemoKey")?.addEventListener("click", () => enrollDemoKey());
 
   // Live Gateway Button
   document.getElementById("btnLiveRegister")?.addEventListener("click", () => handleLiveRegistration());
@@ -404,6 +597,9 @@ document.addEventListener("DOMContentLoaded", () => {
       if (activeContent) activeContent.style.display = "block";
     });
   });
+
+  // Render Passkey Manager
+  renderCredentials();
 
   // Initial simulation greeting
   logTerminal("Enterprise WebAuthn Gateway Showcase Portal loaded.", "info");

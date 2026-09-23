@@ -81,6 +81,7 @@
       <div class="tabs">
         <button class="tab-btn active" data-tab="playground">Interactive Passkey Lab</button>
         <button class="tab-btn" data-tab="counter-lab">Anti-Replay Clone Attack Lab</button>
+        <button class="tab-btn" data-tab="credentials">Registered Passkeys & AAGUIDs</button>
         <button class="tab-btn" data-tab="threat-matrix">Threat Defense Matrix</button>
         <button class="tab-btn" data-tab="architecture">Microservice Architecture</button>
       </div>
@@ -246,6 +247,31 @@ Result: REJECTED with HTTP 403 FORBIDDEN
               </div>
             </div>
           </div>
+        </div>
+      </div>
+
+      <!-- TAB: REGISTERED PASSKEYS & AAGUID MANAGER -->
+      <div class="tab-content" id="tab-credentials" style="display: none;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+          <div>
+            <span class="section-tag">Passkey Management</span>
+            <h3 style="font-size: 1.3rem;">Registered Enterprise Passkeys & Authenticator Attestations</h3>
+            <p style="color: var(--text-secondary); font-size: 0.95rem;">
+              Enforce cryptographic hardware provenance using FIDO2 Authenticator Attestation GUIDs (AAGUIDs) and manage active user authenticators.
+            </p>
+          </div>
+          <button class="cyber-btn cyber-btn-emerald" id="btnAddDemoKey" style="white-space: nowrap;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"/>
+              <line x1="12" y1="8" x2="12" y2="16"/>
+              <line x1="8" y1="12" x2="16" y2="12"/>
+            </svg>
+            Enroll Hardware Key
+          </button>
+        </div>
+
+        <div id="credentialsListGrid" class="grid-2">
+          <!-- Populated by JavaScript renderCredentials() -->
         </div>
       </div>
 
