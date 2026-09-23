@@ -82,6 +82,7 @@
         <button class="tab-btn active" data-tab="playground">Interactive Passkey Lab</button>
         <button class="tab-btn" data-tab="counter-lab">Anti-Replay Clone Attack Lab</button>
         <button class="tab-btn" data-tab="credentials">Registered Passkeys & AAGUIDs</button>
+        <button class="tab-btn" data-tab="telemetry">Live Prometheus Telemetry</button>
         <button class="tab-btn" data-tab="threat-matrix">Threat Defense Matrix</button>
         <button class="tab-btn" data-tab="architecture">Microservice Architecture</button>
       </div>
@@ -349,6 +350,84 @@ Result: REJECTED with HTTP 403 FORBIDDEN
 │   • /api/admin/transfer (Step-Up Wire Transfers)                       │
 └────────────────────────────────────────────────────────────────────────┘
             </pre>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB: PROMETHEUS TELEMETRY & OBSERVABILITY -->
+      <div class="tab-content" id="tab-telemetry" style="display: none;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+          <div>
+            <span class="section-tag">Observability & SIEM</span>
+            <h3 style="font-size: 1.3rem;">Real-Time Prometheus Telemetry & Performance Metrics</h3>
+            <p style="color: var(--text-secondary); font-size: 0.95rem;">
+              Scraped from <code>/metrics</code> endpoint for monitoring ceremony rates, anti-replay alerts, and P95 latency distributions.
+            </p>
+          </div>
+          <button class="cyber-btn cyber-btn-cyan" id="btnRefreshMetrics" style="white-space: nowrap;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="23 4 23 10 17 10"/>
+              <polyline points="1 20 1 14 7 14"/>
+              <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+            </svg>
+            Scrape /metrics
+          </button>
+        </div>
+
+        <div class="hero-stats" style="margin-top: 0; margin-bottom: 24px; justify-content: space-between;">
+          <div class="glass-card stat-item" style="flex: 1; min-width: 180px; padding: 18px;">
+            <div class="stat-value cyan" id="metricHttpTotal">142</div>
+            <div class="stat-label">HTTP Requests Total</div>
+          </div>
+          <div class="glass-card stat-item" style="flex: 1; min-width: 180px; padding: 18px;">
+            <div class="stat-value emerald" id="metricAuthSuccess">68</div>
+            <div class="stat-label">Successful FIDO2 Logins</div>
+          </div>
+          <div class="glass-card stat-item" style="flex: 1; min-width: 180px; padding: 18px;">
+            <div class="stat-value" id="metricReplayViolations" style="color: var(--accent-rose);">3</div>
+            <div class="stat-label">Replay Violations Blocked</div>
+          </div>
+          <div class="glass-card stat-item" style="flex: 1; min-width: 180px; padding: 18px;">
+            <div class="stat-value violet" id="metricLatencyP95">18 ms</div>
+            <div class="stat-label">P95 Verification Latency</div>
+          </div>
+        </div>
+
+        <div class="grid-2">
+          <div class="glass-card">
+            <span class="section-tag">Metrics Collector Breakdown</span>
+            <h4 style="font-size: 1.1rem; margin-bottom: 14px;">Active Telemetry Counters</h4>
+            <div style="display: flex; flex-direction: column; gap: 12px; font-size: 0.9rem;">
+              <div style="display: flex; justify-content: space-between; padding: 8px 12px; background: rgba(0,0,0,0.3); border-radius: 6px;">
+                <span><code>webauthn_registration_requests_total</code></span>
+                <span class="threat-badge badge-defense" id="metricRegTotal">24</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; padding: 8px 12px; background: rgba(0,0,0,0.3); border-radius: 6px;">
+                <span><code>webauthn_authentication_attempts{status="success"}</code></span>
+                <span class="threat-badge badge-defense" id="metricAuthSuccessCount">68</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; padding: 8px 12px; background: rgba(0,0,0,0.3); border-radius: 6px;">
+                <span><code>webauthn_counter_replay_violations_total</code></span>
+                <span class="threat-badge" style="background: rgba(244, 63, 94, 0.2); color: #fca5a5;" id="metricReplayCount">3</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; padding: 8px 12px; background: rgba(0,0,0,0.3); border-radius: 6px;">
+                <span><code>webauthn_step_up_challenges{status="authorized"}</code></span>
+                <span class="threat-badge badge-defense" id="metricStepUpCount">19</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="code-window">
+            <div class="code-header">
+              <div class="window-dots">
+                <div class="dot dot-red"></div>
+                <div class="dot dot-yellow"></div>
+                <div class="dot dot-green"></div>
+              </div>
+              <div class="window-title">RAW PROMETHEUS /metrics TEXT EXPORT</div>
+              <div style="color: var(--accent-cyan); font-size: 0.72rem;">TEXT/PLAIN</div>
+            </div>
+            <div class="code-content" id="rawPrometheusMetrics" style="height: 300px; font-size: 0.8rem;"></div>
           </div>
         </div>
       </div>
