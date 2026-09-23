@@ -1,5 +1,4 @@
-"""Cryptographic handlers for WebAuthn registration, authentication, and JWT tokens."""
-
+from gateway.crypto.aaguid_lookup import resolve_aaguid
 from gateway.crypto.audit_logger import SecurityAuditLogger, audit_logger
 from gateway.crypto.authentication import (
     CounterReplayError,
@@ -19,6 +18,7 @@ __all__ = [
     "create_session_token",
     "generate_authentication_challenge",
     "generate_registration_challenge",
+    "resolve_aaguid",
     "verify_authentication",
     "verify_registration",
     "verify_session_token",
